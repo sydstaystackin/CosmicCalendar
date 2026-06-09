@@ -153,6 +153,16 @@
   .form textarea{min-height:84px;resize:vertical;line-height:1.5}
   .form .hint{font-size:11.5px;color:var(--dust);margin-top:5px;line-height:1.45}
   .closex{position:absolute;top:14px;right:16px;width:32px;height:32px;border-radius:50%;background:var(--ink);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--dust);z-index:3}
+  .entchips{display:flex;gap:7px;overflow-x:auto;padding:2px 0 12px;-webkit-overflow-scrolling:touch}
+  .echip{flex:0 0 auto;font-size:12px;padding:7px 13px;border-radius:999px;border:1px solid var(--line);color:var(--dust)}
+  .echip.on{border-color:var(--gold);color:var(--gold);background:rgba(201,162,75,.12)}
+  .tlist{display:flex;flex-direction:column;gap:1px}
+  .trow{display:flex;gap:11px;align-items:baseline;padding:9px 0;border-bottom:1px solid var(--line);font-size:13.5px;color:#D2CADE;line-height:1.4}
+  .trow .tn{flex:0 0 18px;font-family:var(--serif);font-style:italic;color:var(--gold);font-size:15px}
+  .thist .throw{display:flex;gap:12px;background:var(--ink);border:1px solid var(--line);border-radius:12px;padding:11px;margin-bottom:8px}
+  .thist .throw img{width:62px;height:62px;object-fit:cover;border-radius:9px;flex:0 0 auto}
+  .btn.deeper{border-color:var(--amethyst);color:var(--amethyst)}
+  .deepbox{background:rgba(166,132,208,.07);border:1px solid rgba(166,132,208,.22);border-radius:14px;padding:14px 15px;font-size:13.5px;color:#E6DCD0;line-height:1.6;font-style:italic}
   @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -512,9 +522,9 @@ function iso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'
 
 /* ====== STATE ====== */
 const TODAY=new Date(2026,5,8);
-let view='sky', calMonth=new Date(2026,5,1), userEvents=[], personEdits={}, activeEvent=null, activeTab='a', activePerson=null, personTab='syn';
+let view='sky', calMonth=new Date(2026,5,1), userEvents=[], personEdits={}, activeEvent=null, activeTab='a', activePerson=null, personTab='syn', activeEntPerson=null, tarotLog=[];
 const ritualState={};
-const LENS={a:'🪐 Transit Intelligence',f:'🔮 Energy Forecast',g:'🌙 Moon Magic'};
+const LENS={a:'🪐 Transit Intelligence',f:'🔮 Energy Forecast',g:'🌙 Moon Magic',ent:'🕸️ Energetic Entanglements'};
 const shead=document.getElementById('shead'),tabs=document.getElementById('tabs'),sbody=document.getElementById('sbody');
 
 /* ====== SHEET ====== */
@@ -556,7 +566,7 @@ function renderSky(){
 function openEvent(e){activeEvent=e;activeTab='a';
   shead.innerHTML='<div class="gl" style="width:54px;margin:2px auto 8px">'+eventMoon(e.type,54)+'</div><div class="d">'+e.dlabel+'</div><h2>'+e.name+'</h2><div class="deg">'+SIGNS[e.sign]+' '+e.deg+' '+GLYPH[e.sign]+(e.eclipse?' · '+e.eclipse:'')+'</div>'+(e.peak?'<div class="peak">'+e.peak+'</div>':'');
   tabs.innerHTML='';
-  ['a','f','g'].forEach(k=>{const t=document.createElement('button');t.className='tab'+(k===activeTab?' on':'');t.dataset.k=k;t.textContent=LENS[k];t.onclick=()=>{activeTab=k;document.querySelectorAll('#tabs .tab').forEach(x=>x.classList.toggle('on',x.dataset.k===activeTab));renderEventBody();};tabs.appendChild(t);});
+  ['a','f','g','ent'].forEach(k=>{const t=document.createElement('button');t.className='tab'+(k===activeTab?' on':'');t.dataset.k=k;t.textContent=LENS[k];t.onclick=()=>{activeTab=k;document.querySelectorAll('#tabs .tab').forEach(x=>x.classList.toggle('on',x.dataset.k===activeTab));renderEventBody();};tabs.appendChild(t);});
   renderEventBody();openSheet();
 }
 function renderEventBody(){
@@ -570,16 +580,18 @@ function renderEventBody(){
     h+='<div class="blk"><h4>🗝️ Hits Your Chart</h4><p>'+f.hits+'</p></div>';
     h+='<div class="blk"><h4>🔥 You\'ll Feel</h4><ul class="pl">'+f.feel.map(x=>'<li>'+x+'</li>').join('')+'</ul></div>';
     h+='<div class="blk"><h4>⚠️ Watch For</h4><ul class="pl">'+f.watch.map(x=>'<li>'+x+'</li>').join('')+'</ul></div>';
+  } else if(activeTab==='ent'){ h+=renderEntTab(e);
   } else {const g=e.gr,c=corrBlk(e.sign);
     h+='<div class="blk"><h4>🕯️ '+(e.type==='full'?'Full':'New')+' Moon Magic</h4><p>'+g.blurb+'</p></div>';
     h+='<div class="blk"><h4>🌙 Correspondences</h4><dl class="corr"><dt>element</dt><dd>'+c.el+'</dd><dt>colors</dt><dd>'+c.co+'</dd><dt>herbs</dt><dd>'+c.hb+'</dd><dt>crystals</dt><dd>'+c.cr+'</dd><dt>body</dt><dd>'+c.bd+'</dd></dl></div>';
     h+='<div class="blk"><h4>📜 Prompts</h4><ul class="pl">'+g.prompts.map(x=>'<li>'+x+'</li>').join('')+'</ul></div>';
-    if(g.tarot)h+='<div class="blk"><h4>🃏 Tarot Spread</h4><div class="tarot">'+g.tarot.map((q,i)=>'<div class="tcard"><div class="tno">'+(i+1)+'</div><div class="tq">'+q+'</div></div>').join('')+'</div></div>';
+    h+=renderTarot(e);
     const r=g.ritual,key=e.date;ritualState[key]=ritualState[key]||{};
     h+='<div class="blk"><h4>🜂 Ritual</h4><div class="ritual"><div class="rn">'+r.n+'</div><div class="why">'+r.why+'</div><dl class="corr"><dt>items</dt><dd>'+r.items+'</dd><dt>timing</dt><dd>'+r.timing+'</dd></dl><div style="margin-top:10px">'+r.steps.map((s,i)=>'<div class="step'+(ritualState[key][i]?' done':'')+'" data-i="'+i+'"><span class="ck"></span><span>'+s+'</span></div>').join('')+'</div></div></div>';
   }
   sbody.innerHTML=h;
-  if(activeTab==='g')sbody.querySelectorAll('.step').forEach(st=>st.onclick=()=>{const k=activeEvent.date,i=+st.dataset.i;ritualState[k][i]=!ritualState[k][i];st.classList.toggle('done');});
+  if(activeTab==='g'){sbody.querySelectorAll('.step').forEach(st=>st.onclick=()=>{const k=activeEvent.date,i=+st.dataset.i;ritualState[k][i]=!ritualState[k][i];st.classList.toggle('done');});const lb=sbody.querySelector('.logbtn');if(lb)lb.onclick=()=>openTarotLogForm(activeEvent);}
+  if(activeTab==='ent')sbody.querySelectorAll('.echip').forEach(c=>c.onclick=()=>{activeEntPerson=c.dataset.id;renderEventBody();});
 }
 
 /* ====== CALENDAR ====== */
@@ -627,31 +639,34 @@ function renderOrbit(){
 }
 function openPerson(p){activePerson=p;personTab='syn';
   shead.innerHTML='<div class="d">'+p.role+'</div><h2>'+p.name+'</h2><div class="deg">'+SIGNS[p.planets.Sun.sign]+' '+GLYPH[p.planets.Sun.sign]+' · '+SIGNS[p.planets.Moon.sign]+' '+GLYPH[p.planets.Moon.sign]+' · '+SIGNS[p.planets.Asc.sign]+' rising</div>';
-  const subs=[['syn','🔗 Synastry'],['chart','🪐 Chart'],['notes','📝 Notes']];
+  const subs=[['syn','🔗 Synastry'],['chart','🪐 Chart'],['comp','⛓️ Composite'],['notes','📝 Notes']];
   tabs.innerHTML='';subs.forEach(s=>{const t=document.createElement('button');t.className='tab'+(s[0]===personTab?' on':'');t.dataset.k=s[0];t.textContent=s[1];t.onclick=()=>{personTab=s[0];document.querySelectorAll('#tabs .tab').forEach(x=>x.classList.toggle('on',x.dataset.k===personTab));renderPersonBody();};tabs.appendChild(t);});
   renderPersonBody();openSheet();
 }
 function renderPersonBody(){
   const p=activePerson;sbody.className='sbody acc-f';let h='';
   if(personTab==='syn'){const syn=synastry(p);
-    h='<div class="blk"><h4>🔗 Against Your Chart</h4><div class="syn">'+syn.map(s=>'<div class="synrow"><div class="sa">'+s.a+'</div><div class="sd">'+s.d+'</div></div>').join('')+'</div></div>';
+    h='<div class="blk"><h4>🔗 Against Your Chart</h4><div class="syn">'+syn.map(s=>'<div class="synrow"><div class="sa">'+s.a+'</div><div class="sd">'+s.d+'</div></div>').join('')+'</div></div><button class="btn deeper" id="deepBtn" style="width:100%;margin-top:12px">👁️ go deeper</button><div class="deepbox" id="deepBox" style="display:none;margin-top:12px"></div>';
   } else if(personTab==='chart'){
     h='<div class="blk"><h4>🪐 '+p.name+'\'s Chart</h4><dl class="corr">'+chartGrid(p.planets)+'</dl></div>';
+  } else if(personTab==='comp'){ h=renderComposite(p);
   } else {
     const e=personEdits[p.id]||{},r=p.roster||{};
     if(p.cat==='roster'){
-      h='<div class="blk"><h4>📝 Notes</h4><div class="form"><div class="field"><label>last linked 😏</label><input id="nLast" value="'+esc(e.last!=null?e.last:r.last||'')+'"></div><div class="field"><label>how you met</label><input id="nMet" value="'+esc(e.met!=null?e.met:r.met||'')+'"></div><div class="field"><label>status</label><input id="nStatus" value="'+esc(e.status!=null?e.status:r.status||'')+'"></div><div class="field"><label>notes</label><textarea id="nNotes">'+esc(e.notes!=null?e.notes:r.note||'')+'</textarea></div><div class="hint">saves as you type 🤞</div></div></div>';
+      h='<div class="blk"><h4>📝 Notes</h4><div class="form"><div class="field"><label>last linked 😏</label><input id="nLast" value="'+esc(e.last!=null?e.last:r.last||'')+'"></div><div class="field"><label>how you met</label><input id="nMet" value="'+esc(e.met!=null?e.met:r.met||'')+'"></div><div class="field"><label>status</label><input id="nStatus" value="'+esc(e.status!=null?e.status:r.status||'')+'"></div><div class="field"><label>notes</label><textarea id="nNotes">'+esc(e.notes!=null?e.notes:r.note||'')+'</textarea></div><div class="field"><label>log a link 🔥 (drops it on the calendar)</label><input type="date" id="nLinkDate"></div><button class="btn" id="nLinkBtn" style="width:100%;margin-bottom:8px">+ log it</button><div class="hint">saves as you type 🤞</div></div></div>';
     } else {
       h='<div class="blk"><h4>📝 Notes</h4><div class="form"><div class="field"><textarea id="nNotes">'+esc(e.notes!=null?e.notes:p.note||'')+'</textarea></div><div class="hint">saves as you type 🤞</div></div></div>';
     }
   }
   sbody.innerHTML=h;
+  if(personTab==='syn'){const db=document.getElementById('deepBtn');if(db)db.onclick=()=>{const bx=document.getElementById('deepBox');bx.innerHTML=deeperSyn(activePerson);bx.style.display='block';db.style.display='none';};}
   if(personTab==='notes'){
     const p2=activePerson;
     const save=async()=>{const ed=personEdits[p2.id]||{},g=id=>{const el=document.getElementById(id);return el?el.value:undefined;};
       if(p2.cat==='roster'){ed.last=g('nLast');ed.met=g('nMet');ed.status=g('nStatus');}ed.notes=g('nNotes');
       personEdits[p2.id]=ed;await store.set('cc:personEdits',personEdits);};
     ['nLast','nMet','nStatus','nNotes'].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('input',save);});
+    const lb=document.getElementById('nLinkBtn');if(lb)lb.onclick=async()=>{const dv=document.getElementById('nLinkDate').value;if(!dv)return;const dd=new Date(dv+'T12:00:00');const lab=dd.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});const ed=personEdits[p2.id]||{};ed.last=lab;personEdits[p2.id]=ed;await store.set('cc:personEdits',personEdits);userEvents.push({date:dv,title:'linked w/ '+p2.name,note:''});await store.set('cc:events',userEvents);const li=document.getElementById('nLast');if(li)li.value=lab;lb.textContent='logged ✓ '+lab;};
   }
 }
 
@@ -674,10 +689,68 @@ async function saveNewPerson(){
   renderOrbit();closeSheet();
 }
 
+/* ====== ENTANGLEMENTS (per-event) ====== */
+function parseEventLon(e){const m=String(e.deg).match(/\d+(\.\d+)?/);return e.sign*30+(m?parseFloat(m[0]):15);}
+function eventHits(e,p){const elon=parseEventLon(e),res=[];['Sun','Moon','Venus','Mars','Mercury','Asc'].forEach(pl=>{if(!p.planets[pl])return;const s=sep(elon,p.planets[pl].lon);for(const asp of ASPECTS){const orb=Math.abs(s-asp.a);if(orb<=asp.orb){res.push({pl,asp:asp.n,orb});break;}}});res.sort((a,b)=>a.orb-b.orb);return res;}
+const ENTVIBE={conjunction:'lands right on their {p} — lights them UP, activates it hard',opposition:'opposes their {p} — tugs something to the surface for them',square:'squares their {p} — friction, they might get reactive',trine:'trines their {p} — flows easy, they feel held',sextile:'sextiles their {p} — a little spark, a door cracks'};
+function entLine(e,p){const h=eventHits(e,p);if(!h.length)return 'This moon mostly leaves '+p.name+' alone — background noise for them this cycle. 😌';const t=h[0];return 'This moon '+ENTVIBE[t.asp].replace('{p}',SIGNS[p.planets[t.pl].sign]+' '+t.pl.toLowerCase())+' ('+t.orb.toFixed(1)+'°).';}
+function renderEntTab(e){
+  if(!activeEntPerson||!PEOPLE.find(x=>x.id===activeEntPerson))activeEntPerson=PEOPLE[0].id;
+  const p=PEOPLE.find(x=>x.id===activeEntPerson);
+  const syn=synastry(p).slice(0,2);
+  let h='<div class="entchips">'+PEOPLE.map(x=>'<button class="echip'+(x.id===activeEntPerson?' on':'')+'" data-id="'+x.id+'">'+x.name+'</button>').join('')+'</div>';
+  h+='<div class="blk"><h4>🌕 '+e.name+' × '+p.name+'</h4><p>'+entLine(e,p)+'</p></div>';
+  h+='<div class="blk"><h4>🔗 Between You Two</h4><div class="syn">'+syn.map(s=>'<div class="synrow"><div class="sa">'+s.a+'</div><div class="sd">'+s.d+'</div></div>').join('')+'</div><p style="font-size:12px;color:var(--dust);margin-top:8px;font-style:italic">so while this moon works on them, your wires are already crossed right here 👀</p></div>';
+  return h;
+}
+
+/* ====== TAROT ====== */
+const TAROT_SPREADS={
+ freedom:{name:'Freedom Spread',prompts:['What have I outgrown?','What wants to expand?','What am I afraid to pursue?','What road is opening?','What happens if I go?']},
+ comm:{name:'Communication Spread',prompts:['What needs to be said?','What am I not hearing?','Where am I overthinking?','What\'s the message under the noise?','What clarity is coming?']},
+ discipline:{name:'Discipline Spread',prompts:['What am I building?','Where am I avoiding the work?','What needs structure?','What\'s worth committing to?','What\'s the long game?']},
+ intuition:{name:'Intuition Spread',prompts:['What is my intuition saying?','What am I numbing?','What wants to dissolve?','What\'s surfacing from the deep?','What does surrender look like?']},
+ confidence:{name:'Confidence Spread',prompts:['Where am I dimming myself?','What wants to be seen?','What\'s my power move?','What would the bold version do?','What am I claiming?']},
+ shadow:{name:'Shadow Spread',prompts:['What am I hiding?','Where\'s the wound?','What power is buried in it?','What dies here?','What\'s reborn?']}};
+const SIGN_SPREAD={0:'confidence',1:'discipline',2:'comm',3:'intuition',4:'confidence',5:'discipline',6:'comm',7:'shadow',8:'freedom',9:'discipline',10:'comm',11:'intuition'};
+function getSpread(e){if(e.gr.tarot)return{name:'Freedom Spread',prompts:e.gr.tarot};return TAROT_SPREADS[SIGN_SPREAD[e.sign]];}
+function renderTarot(e){const sp=getSpread(e),logged=tarotLog.filter(t=>t.eventDate===e.date);
+  let h='<div class="blk"><h4>🃏 '+sp.name+'</h4><div class="tlist">'+sp.prompts.map((q,i)=>'<div class="trow"><span class="tn">'+(i+1)+'</span><span>'+q+'</span></div>').join('')+'</div>';
+  h+='<button class="btn gold logbtn" style="width:100%;margin-top:12px">📸 Log this pull</button>';
+  if(logged.length)h+='<div class="thist"><div style="font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin:16px 0 8px">your pulls</div>'+logged.map(t=>'<div class="throw">'+(t.img?'<img src="'+t.img+'">':'')+'<div><div style="font-size:11px;color:var(--faint)">'+t.date+'</div><div style="font-size:13px;color:#D8D0E0;line-height:1.5;margin-top:2px">'+esc(t.interp||'(no notes)')+'</div></div></div>').join('')+'</div>';
+  return h+'</div>';
+}
+function downscale(file,cb){const r=new FileReader();r.onload=()=>{const img=new Image();img.onload=()=>{const max=440,sc=Math.min(1,max/Math.max(img.width,img.height)),cv=document.createElement('canvas');cv.width=img.width*sc;cv.height=img.height*sc;cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);cb(cv.toDataURL('image/jpeg',0.72));};img.src=r.result;};r.readAsDataURL(file);}
+function openTarotLogForm(e){
+  shead.innerHTML='<div class="d">'+e.name+'</div><h2>Log a Pull</h2>';tabs.innerHTML='';sbody.className='sbody';
+  sbody.innerHTML='<div class="form"><div class="field"><label>photo of your pull</label><input type="file" accept="image/*" id="tlImg"><div id="tlPrev"></div></div><div class="field"><label>your read</label><textarea id="tlInterp" placeholder="what came through… in your voice 🔮"></textarea></div><button class="btn gold" id="tlSave" style="width:100%">Save to Tarot History</button></div>';
+  let imgData=null;
+  document.getElementById('tlImg').onchange=ev=>{const f=ev.target.files[0];if(f)downscale(f,d=>{imgData=d;document.getElementById('tlPrev').innerHTML='<img src="'+d+'" style="width:100%;border-radius:12px;margin-top:10px">';});};
+  document.getElementById('tlSave').onclick=async()=>{tarotLog.push({date:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),eventDate:e.date,eventName:e.name,interp:document.getElementById('tlInterp').value.trim(),img:imgData});await store.set('cc:tarot',tarotLog);openEvent(e);activeTab='g';document.querySelectorAll('#tabs .tab').forEach(x=>x.classList.toggle('on',x.dataset.k==='g'));renderEventBody();};
+}
+
+/* ====== COMPOSITE + DEEPER ====== */
+function midLon(a,b){let m=(a+b)/2;if(Math.abs(a-b)>180)m=(m+180)%360;return (m+360)%360;}
+function composite(p){const o={};['Sun','Moon','Mercury','Venus','Mars','Asc'].forEach(k=>{if(p.planets[k]&&SYD.planets[k]){const lon=midLon(p.planets[k].lon,SYD.planets[k].lon);o[k]={lon,sign:Math.floor(lon/30),deg:lon%30};}});return o;}
+const COMPVIBE=['raw, pioneering, a little combustible','sensual, steady, possessive','chatty, restless, mentally hooked','tender, moody, deeply bonded','dramatic, warm, ego on the line','devoted, particular, useful','romantic, balanced, image-aware','obsessive, transformative, all-or-nothing','adventurous, philosophical, freedom-first','ambitious, serious, slow-burn','unconventional, detached, electric','dreamy, blurry, a little fated'];
+function compRead(c){if(!c.Sun)return 'Not enough data to read the us-chart yet.';return 'Your "us" runs on '+SIGNS[c.Sun.sign]+' Sun energy — '+COMPVIBE[c.Sun.sign]+(c.Moon?'. The emotional current underneath is '+SIGNS[c.Moon.sign]+' Moon: '+COMPVIBE[c.Moon.sign].split(',')[0]+'.':'.');}
+function renderComposite(p){const c=composite(p);const order=['Sun','Moon','Mercury','Venus','Mars','Asc'];
+  let h='<div class="blk"><h4>⛓️ The "Us" Chart</h4><p style="font-size:13px;color:var(--dust);font-style:italic">midpoint composite — the relationship as its own little being.</p><dl class="corr" style="margin-top:12px">'+order.filter(k=>c[k]).map(k=>'<dt>'+GL[k]+' '+k+'</dt><dd>'+SIGNS[c[k].sign]+' '+c[k].deg.toFixed(0)+'° '+GLYPH[c[k].sign]+'</dd>').join('')+'</dl></div>';
+  h+='<div class="blk"><h4>🪞 What It Is</h4><p>'+compRead(c)+'</p></div>';return h;
+}
+function deeperSyn(p){const s=synastry(p),top=s.slice(0,3);
+  const parts=top.map(x=>{const bits=x.d.split(' — ');return bits[1]?bits[1]:x.d;});
+  let body='okay real talk on you + '+p.name+': '+parts.join('. on top of that, ')+'.';
+  const lum=s.some(x=>/Sun|Moon/.test(x.a));
+  body+=lum?' the sun/moon contacts mean this one lives in the body, not just the head — you feel them before you think about them 😮‍💨.':' it\'s more of a head + energy tangle than a soul-deep pull, which is honestly easier to walk away from.';
+  return body;
+}
+
 /* ====== INIT ====== */
 async function init(){
   userEvents=(await store.get('cc:events'))||[];
   personEdits=(await store.get('cc:personEdits'))||{};
+  tarotLog=(await store.get('cc:tarot'))||[];
   const added=(await store.get('cc:addedPeople'))||[];
   added.forEach(p=>{p.planets=L(p.planets);PEOPLE.push(p);});
   switchView('sky');
