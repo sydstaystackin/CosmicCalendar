@@ -6,16 +6,16 @@
 <title>Cosmic Calendar</title>
 <style>
   :root{
-    --void:#0E0B14; --void2:#0A0810; --ink:#181222; --ink2:#211931;
-    --line:#2C2438; --moonlight:#EDE6D6; --dust:#9C93A8; --faint:#5A5168;
-    --gold:#C9A24B; --ember:#C65A2E; --sage:#86946A; --amethyst:#A684D0; --candle:#E0A23C;
+    --void:#ECE0CC; --void2:#FAF4E9; --ink:#FBF6EC; --ink2:#F2E8D6;
+    --line:#E1D3B9; --moonlight:#2B2013; --dust:#8C7E64; --faint:#B0A084;
+    --gold:#A6792A; --ember:#BC4A24; --sage:#67734A; --amethyst:#785499; --candle:#B07F26;
     --serif:"Hoefler Text","Didot","Bodoni MT",Georgia,serif;
     --sans:"Avenir Next","Segoe UI",Inter,-apple-system,system-ui,sans-serif;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{background:var(--void);color:var(--moonlight);font-family:var(--sans);-webkit-font-smoothing:antialiased}
   body{overflow-x:hidden;line-height:1.5}
-  .stars{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.7}
+  .stars{display:none}
   .wrap{position:relative;z-index:1;max-width:680px;margin:0 auto;padding:0 18px 110px}
   .eyebrow{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--faint);font-weight:600}
   h1,h2,h3{font-family:var(--serif);font-weight:500}
@@ -34,7 +34,7 @@
   .tonight{display:flex;gap:22px;align-items:center;background:linear-gradient(160deg,var(--ink),var(--void2));border:1px solid var(--line);border-radius:26px;padding:24px 22px;margin-top:22px;position:relative;overflow:hidden}
   .tonight::after{content:"";position:absolute;right:-40px;top:-40px;width:200px;height:200px;background:radial-gradient(circle,rgba(201,162,75,.10),transparent 70%)}
   .moonbox{flex:0 0 92px;height:92px;position:relative}
-  .moonglow{position:absolute;inset:-14px;border-radius:50%;background:radial-gradient(circle,rgba(237,230,214,.22),transparent 65%)}
+  .moonglow{position:absolute;inset:-14px;border-radius:50%;background:radial-gradient(circle,rgba(166,121,42,.22),transparent 65%)}
   svg.moon{display:block;border-radius:50%;position:relative}
   .tnow{flex:1;min-width:0}
   .tnow .eyebrow{margin-bottom:7px}
@@ -95,13 +95,13 @@
   .prow.add .pglyph{color:var(--dust)}
 
   /* tab bar */
-  .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;justify-content:center;gap:6px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:rgba(10,8,16,.92);backdrop-filter:blur(12px);border-top:1px solid var(--line)}
+  .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;justify-content:center;gap:6px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:rgba(250,244,233,.93);backdrop-filter:blur(12px);border-top:1px solid var(--line)}
   .tabbar button{flex:1;max-width:150px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 4px;border-radius:14px;font-size:18px;color:var(--faint);transition:.16s}
   .tabbar button span{font-size:10px;letter-spacing:.08em}
   .tabbar button.on{color:var(--gold)}
 
   /* sheet */
-  .scrim{position:fixed;inset:0;background:rgba(8,6,12,.78);backdrop-filter:blur(7px);z-index:50;opacity:0;pointer-events:none;transition:.22s}
+  .scrim{position:fixed;inset:0;background:rgba(58,46,30,.46);backdrop-filter:blur(7px);z-index:50;opacity:0;pointer-events:none;transition:.22s}
   .scrim.on{opacity:1;pointer-events:auto}
   .sheet{position:fixed;left:50%;bottom:0;transform:translate(-50%,100%);width:100%;max-width:600px;max-height:92vh;background:var(--void2);border:1px solid var(--line);border-bottom:none;border-radius:26px 26px 0 0;z-index:51;transition:transform .26s cubic-bezier(.2,.7,.2,1);overflow:hidden;display:flex;flex-direction:column}
   .sheet.on{transform:translate(-50%,0)}
@@ -121,20 +121,20 @@
   .sbody{overflow-y:auto;padding:4px 22px 40px;-webkit-overflow-scrolling:touch}
   .blk{margin-top:18px}
   .blk h4{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);margin-bottom:9px;font-weight:700}
-  .blk p{font-size:14.5px;color:#D8D0E0;line-height:1.6}
+  .blk p{font-size:14.5px;color:#3A2C19;line-height:1.6}
   .blk p .hl{color:var(--moonlight)}
   ul.pl{list-style:none;display:flex;flex-direction:column;gap:6px;margin-top:4px}
-  ul.pl li{font-size:13.5px;color:#CFC7DC;padding-left:18px;position:relative;line-height:1.45}
+  ul.pl li{font-size:13.5px;color:#463826;padding-left:18px;position:relative;line-height:1.45}
   ul.pl li::before{content:"";position:absolute;left:2px;top:8px;width:5px;height:5px;border-radius:50%}
   .acc-a ul.pl li::before{background:var(--sage)} .acc-f ul.pl li::before{background:var(--amethyst)} .acc-g ul.pl li::before{background:var(--candle)}
-  .tea{background:rgba(201,162,75,.07);border:1px solid rgba(201,162,75,.22);border-radius:14px;padding:14px 15px;font-size:13.5px;color:#E6DCC6;font-style:italic;line-height:1.6}
+  .tea{background:rgba(201,162,75,.07);border:1px solid rgba(201,162,75,.22);border-radius:14px;padding:14px 15px;font-size:13.5px;color:#574323;font-style:italic;line-height:1.6}
   .corr{display:grid;grid-template-columns:auto 1fr;gap:7px 14px;font-size:13px}
   .corr dt{color:var(--faint);text-transform:uppercase;letter-spacing:.1em;font-size:10.5px;padding-top:2px}
-  .corr dd{color:#D8D0E0}
+  .corr dd{color:#3A2C19}
   .ritual{background:var(--ink);border:1px solid var(--line);border-radius:14px;padding:15px 16px;margin-top:6px}
   .ritual .rn{font-family:var(--serif);font-size:17px;color:var(--candle)}
   .ritual .why{font-size:12.5px;color:var(--dust);font-style:italic;margin:5px 0 12px}
-  .step{display:flex;gap:11px;align-items:flex-start;padding:7px 0;font-size:13.5px;color:#D2CADE;cursor:pointer}
+  .step{display:flex;gap:11px;align-items:flex-start;padding:7px 0;font-size:13.5px;color:#3E3019;cursor:pointer}
   .step .ck{flex:0 0 19px;height:19px;border:1.5px solid var(--faint);border-radius:6px;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:.15s}
   .step.done .ck{background:var(--candle);border-color:var(--candle)}
   .step.done .ck::after{content:"\2713";color:var(--void);font-size:12px;font-weight:800}
@@ -142,11 +142,11 @@
   .tarot{display:flex;gap:8px;overflow-x:auto;padding:6px 0 8px}
   .tcard{flex:0 0 116px;background:linear-gradient(170deg,var(--ink2),var(--ink));border:1px solid var(--line);border-radius:11px;padding:11px;min-height:96px}
   .tcard .tno{font-family:var(--serif);font-size:20px;color:var(--gold);font-style:italic}
-  .tcard .tq{font-size:11.5px;color:#CFC7DC;line-height:1.35;margin-top:6px}
+  .tcard .tq{font-size:11.5px;color:#463826;line-height:1.35;margin-top:6px}
   .syn{display:flex;flex-direction:column;gap:9px}
   .synrow{background:var(--ink);border:1px solid var(--line);border-radius:12px;padding:11px 13px}
   .synrow .sa{font-size:12px;color:var(--gold);font-style:italic;font-family:var(--serif)}
-  .synrow .sd{font-size:13px;color:#D2CADE;margin-top:3px;line-height:1.45}
+  .synrow .sd{font-size:13px;color:#3E3019;margin-top:3px;line-height:1.45}
   .form .field{margin-bottom:13px}
   .form label{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-bottom:6px}
   .form input,.form textarea{width:100%;background:var(--void2);border:1px solid var(--line);color:var(--moonlight);border-radius:11px;padding:11px 12px;font-family:inherit;font-size:14px}
@@ -157,12 +157,23 @@
   .echip{flex:0 0 auto;font-size:12px;padding:7px 13px;border-radius:999px;border:1px solid var(--line);color:var(--dust)}
   .echip.on{border-color:var(--gold);color:var(--gold);background:rgba(201,162,75,.12)}
   .tlist{display:flex;flex-direction:column;gap:1px}
-  .trow{display:flex;gap:11px;align-items:baseline;padding:9px 0;border-bottom:1px solid var(--line);font-size:13.5px;color:#D2CADE;line-height:1.4}
+  .trow{display:flex;gap:11px;align-items:baseline;padding:9px 0;border-bottom:1px solid var(--line);font-size:13.5px;color:#3E3019;line-height:1.4}
   .trow .tn{flex:0 0 18px;font-family:var(--serif);font-style:italic;color:var(--gold);font-size:15px}
   .thist .throw{display:flex;gap:12px;background:var(--ink);border:1px solid var(--line);border-radius:12px;padding:11px;margin-bottom:8px}
   .thist .throw img{width:62px;height:62px;object-fit:cover;border-radius:9px;flex:0 0 auto}
   .btn.deeper{border-color:var(--amethyst);color:var(--amethyst)}
-  .deepbox{background:rgba(166,132,208,.07);border:1px solid rgba(166,132,208,.22);border-radius:14px;padding:14px 15px;font-size:13.5px;color:#E6DCD0;line-height:1.6;font-style:italic}
+  .deepbox{background:rgba(166,132,208,.07);border:1px solid rgba(166,132,208,.22);border-radius:14px;padding:14px 15px;font-size:13.5px;color:#463724;line-height:1.6;font-style:italic}
+  .ccard{text-align:center;padding:8px 0 4px}
+  .cc-av{width:64px;height:64px;border-radius:50%;border:1px solid var(--line);background:var(--ink2);display:flex;align-items:center;justify-content:center;font-size:30px;color:var(--gold);margin:0 auto 12px}
+  .cc-name{font-family:var(--serif);font-size:28px;line-height:1}
+  .cc-sun{font-size:12px;color:var(--gold);font-style:italic;margin-top:6px}
+  .synlist{display:flex;flex-direction:column;gap:8px}
+  .synline{display:block;width:100%;text-align:left;background:var(--ink);border:1px solid var(--line);border-radius:13px;padding:13px 15px;transition:.14s}
+  .synline:hover{border-color:var(--gold)}
+  .sl-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .sl-a{font-size:14px;color:var(--moonlight);line-height:1.35}
+  .sl-chev{flex:0 0 auto;color:var(--gold);font-size:16px}
+  .sl-deep{font-size:13px;color:var(--dust);line-height:1.6;margin-top:10px;padding-top:10px;border-top:1px solid var(--line);font-style:italic}
   @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -515,8 +526,8 @@ const EVENTS=[
 
 /* ====== STORAGE ====== */
 const store={mem:{},
-  async get(k){try{if(window.storage){const r=await window.storage.get(k);return r&&r.value?JSON.parse(r.value):null;}}catch(e){} return (k in this.mem)?this.mem[k]:null;},
-  async set(k,v){this.mem[k]=v;try{if(window.storage)await window.storage.set(k,JSON.stringify(v));}catch(e){}}};
+  async get(k){try{const r=localStorage.getItem(k);if(r!=null)return JSON.parse(r);}catch(e){} return (k in this.mem)?this.mem[k]:null;},
+  async set(k,v){this.mem[k]=v;try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}};
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
 function iso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 
@@ -605,7 +616,7 @@ function renderCalendar(){
   cells.forEach(c=>{
     if(!c){h+='<div class="cell empty"></div>';return;}
     const id=iso(c),sky=skyNow(new Date(c.getFullYear(),c.getMonth(),c.getDate(),21,0)),lun=EVENTS.find(e=>e.date===id),ue=userEvents.filter(e=>e.date===id),tdy=id===iso(TODAY);
-    let marks='';if(lun)marks+='<span class="lmark" style="background:'+(lun.type==='full'?'#EDE6D6':'#7A6E88')+'"></span>';if(ue.length)marks+='<span class="lmark" style="background:var(--gold)"></span>';
+    let marks='';if(lun)marks+='<span class="lmark" style="background:'+(lun.type==='full'?'#A6792A':'#C9B68E')+'"></span>';if(ue.length)marks+='<span class="lmark" style="background:var(--gold)"></span>';
     h+='<button class="cell'+(tdy?' today':'')+(lun?' haslun':'')+'" data-iso="'+id+'"><span class="cmoon">'+moonSVG(8,sky.illum,sky.waxing,18)+'</span><span class="cnum">'+c.getDate()+'</span><span class="cmarks">'+marks+'</span></button>';
   });
   h+='</div>';host.innerHTML=h;
@@ -637,37 +648,22 @@ function renderOrbit(){
   host.querySelectorAll('.prow[data-id]').forEach(b=>b.onclick=()=>openPerson(PEOPLE.find(p=>p.id===b.dataset.id)));
   document.getElementById('addP').onclick=openAddForm;
 }
-function openPerson(p){activePerson=p;personTab='syn';
-  shead.innerHTML='<div class="d">'+p.role+'</div><h2>'+p.name+'</h2><div class="deg">'+SIGNS[p.planets.Sun.sign]+' '+GLYPH[p.planets.Sun.sign]+' · '+SIGNS[p.planets.Moon.sign]+' '+GLYPH[p.planets.Moon.sign]+' · '+SIGNS[p.planets.Asc.sign]+' rising</div>';
-  const subs=[['syn','🔗 Synastry'],['chart','🪐 Chart'],['comp','⛓️ Composite'],['notes','📝 Notes']];
+function openPerson(p){activePerson=p;personTab='card';
+  const rl=(personEdits[p.id]&&personEdits[p.id].rel)||p.role;
+  shead.innerHTML='<div class="d">'+rl+'</div><h2>'+p.name+'</h2><div class="deg">'+SIGNS[p.planets.Sun.sign]+' '+GLYPH[p.planets.Sun.sign]+' · '+SIGNS[p.planets.Moon.sign]+' '+GLYPH[p.planets.Moon.sign]+' · '+SIGNS[p.planets.Asc.sign]+' rising</div>';
+  const subs=[['card','📇 Card'],['syn','🔗 Synastry'],['chart','🪐 Chart'],['comp','⛓️ Composite']];
   tabs.innerHTML='';subs.forEach(s=>{const t=document.createElement('button');t.className='tab'+(s[0]===personTab?' on':'');t.dataset.k=s[0];t.textContent=s[1];t.onclick=()=>{personTab=s[0];document.querySelectorAll('#tabs .tab').forEach(x=>x.classList.toggle('on',x.dataset.k===personTab));renderPersonBody();};tabs.appendChild(t);});
   renderPersonBody();openSheet();
 }
 function renderPersonBody(){
   const p=activePerson;sbody.className='sbody acc-f';let h='';
-  if(personTab==='syn'){const syn=synastry(p);
-    h='<div class="blk"><h4>🔗 Against Your Chart</h4><div class="syn">'+syn.map(s=>'<div class="synrow"><div class="sa">'+s.a+'</div><div class="sd">'+s.d+'</div></div>').join('')+'</div></div><button class="btn deeper" id="deepBtn" style="width:100%;margin-top:12px">👁️ go deeper</button><div class="deepbox" id="deepBox" style="display:none;margin-top:12px"></div>';
-  } else if(personTab==='chart'){
-    h='<div class="blk"><h4>🪐 '+p.name+'\'s Chart</h4><dl class="corr">'+chartGrid(p.planets)+'</dl></div>';
-  } else if(personTab==='comp'){ h=renderComposite(p);
-  } else {
-    const e=personEdits[p.id]||{},r=p.roster||{};
-    if(p.cat==='roster'){
-      h='<div class="blk"><h4>📝 Notes</h4><div class="form"><div class="field"><label>last linked 😏</label><input id="nLast" value="'+esc(e.last!=null?e.last:r.last||'')+'"></div><div class="field"><label>how you met</label><input id="nMet" value="'+esc(e.met!=null?e.met:r.met||'')+'"></div><div class="field"><label>status</label><input id="nStatus" value="'+esc(e.status!=null?e.status:r.status||'')+'"></div><div class="field"><label>notes</label><textarea id="nNotes">'+esc(e.notes!=null?e.notes:r.note||'')+'</textarea></div><div class="field"><label>log a link 🔥 (drops it on the calendar)</label><input type="date" id="nLinkDate"></div><button class="btn" id="nLinkBtn" style="width:100%;margin-bottom:8px">+ log it</button><div class="hint">saves as you type 🤞</div></div></div>';
-    } else {
-      h='<div class="blk"><h4>📝 Notes</h4><div class="form"><div class="field"><textarea id="nNotes">'+esc(e.notes!=null?e.notes:p.note||'')+'</textarea></div><div class="hint">saves as you type 🤞</div></div></div>';
-    }
-  }
+  if(personTab==='card'){ h=renderCard(p); }
+  else if(personTab==='syn'){ h=renderSynTab(p); }
+  else if(personTab==='chart'){ h='<div class="blk"><h4>🪐 '+p.name+'\'s Chart</h4><dl class="corr">'+chartGrid(p.planets)+'</dl></div>'; }
+  else { h=renderComposite(p); }
   sbody.innerHTML=h;
-  if(personTab==='syn'){const db=document.getElementById('deepBtn');if(db)db.onclick=()=>{const bx=document.getElementById('deepBox');bx.innerHTML=deeperSyn(activePerson);bx.style.display='block';db.style.display='none';};}
-  if(personTab==='notes'){
-    const p2=activePerson;
-    const save=async()=>{const ed=personEdits[p2.id]||{},g=id=>{const el=document.getElementById(id);return el?el.value:undefined;};
-      if(p2.cat==='roster'){ed.last=g('nLast');ed.met=g('nMet');ed.status=g('nStatus');}ed.notes=g('nNotes');
-      personEdits[p2.id]=ed;await store.set('cc:personEdits',personEdits);};
-    ['nLast','nMet','nStatus','nNotes'].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('input',save);});
-    const lb=document.getElementById('nLinkBtn');if(lb)lb.onclick=async()=>{const dv=document.getElementById('nLinkDate').value;if(!dv)return;const dd=new Date(dv+'T12:00:00');const lab=dd.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});const ed=personEdits[p2.id]||{};ed.last=lab;personEdits[p2.id]=ed;await store.set('cc:personEdits',personEdits);userEvents.push({date:dv,title:'linked w/ '+p2.name,note:''});await store.set('cc:events',userEvents);const li=document.getElementById('nLast');if(li)li.value=lab;lb.textContent='logged ✓ '+lab;};
-  }
+  if(personTab==='card')wireCard(p);
+  if(personTab==='syn')sbody.querySelectorAll('.synline').forEach(b=>b.onclick=()=>{const d=b.querySelector('.sl-deep'),c=b.querySelector('.sl-chev');const open=d.style.display!=='none';d.style.display=open?'none':'block';c.textContent=open?'\uFF0B':'\uFF0D';});
 }
 
 /* ====== ADD PERSON ====== */
@@ -717,7 +713,7 @@ function getSpread(e){if(e.gr.tarot)return{name:'Freedom Spread',prompts:e.gr.ta
 function renderTarot(e){const sp=getSpread(e),logged=tarotLog.filter(t=>t.eventDate===e.date);
   let h='<div class="blk"><h4>🃏 '+sp.name+'</h4><div class="tlist">'+sp.prompts.map((q,i)=>'<div class="trow"><span class="tn">'+(i+1)+'</span><span>'+q+'</span></div>').join('')+'</div>';
   h+='<button class="btn gold logbtn" style="width:100%;margin-top:12px">📸 Log this pull</button>';
-  if(logged.length)h+='<div class="thist"><div style="font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin:16px 0 8px">your pulls</div>'+logged.map(t=>'<div class="throw">'+(t.img?'<img src="'+t.img+'">':'')+'<div><div style="font-size:11px;color:var(--faint)">'+t.date+'</div><div style="font-size:13px;color:#D8D0E0;line-height:1.5;margin-top:2px">'+esc(t.interp||'(no notes)')+'</div></div></div>').join('')+'</div>';
+  if(logged.length)h+='<div class="thist"><div style="font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin:16px 0 8px">your pulls</div>'+logged.map(t=>'<div class="throw">'+(t.img?'<img src="'+t.img+'">':'')+'<div><div style="font-size:11px;color:var(--faint)">'+t.date+'</div><div style="font-size:13px;color:#3A2C19;line-height:1.5;margin-top:2px">'+esc(t.interp||'(no notes)')+'</div></div></div>').join('')+'</div>';
   return h+'</div>';
 }
 function downscale(file,cb){const r=new FileReader();r.onload=()=>{const img=new Image();img.onload=()=>{const max=440,sc=Math.min(1,max/Math.max(img.width,img.height)),cv=document.createElement('canvas');cv.width=img.width*sc;cv.height=img.height*sc;cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);cb(cv.toDataURL('image/jpeg',0.72));};img.src=r.result;};r.readAsDataURL(file);}
@@ -728,6 +724,42 @@ function openTarotLogForm(e){
   document.getElementById('tlImg').onchange=ev=>{const f=ev.target.files[0];if(f)downscale(f,d=>{imgData=d;document.getElementById('tlPrev').innerHTML='<img src="'+d+'" style="width:100%;border-radius:12px;margin-top:10px">';});};
   document.getElementById('tlSave').onclick=async()=>{tarotLog.push({date:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),eventDate:e.date,eventName:e.name,interp:document.getElementById('tlInterp').value.trim(),img:imgData});await store.set('cc:tarot',tarotLog);openEvent(e);activeTab='g';document.querySelectorAll('#tabs .tab').forEach(x=>x.classList.toggle('on',x.dataset.k==='g'));renderEventBody();};
 }
+
+/* ====== CONTACT CARD ====== */
+function renderCard(p){const e=personEdits[p.id]||{},r=p.roster||{};
+  const v=(k,fb)=>esc(e[k]!=null?e[k]:(fb||''));
+  let h='<div class="ccard"><div class="cc-av">'+GLYPH[p.planets.Sun.sign]+'</div><div class="cc-name">'+p.name+'</div><div class="cc-sun">'+SIGNS[p.planets.Sun.sign]+' \u2609 · '+SIGNS[p.planets.Moon.sign]+' \u263D · '+SIGNS[p.planets.Asc.sign]+' \u2191</div></div>';
+  h+='<div class="form" style="margin-top:16px">';
+  [['rel','relationship',p.role],['handle','@ / socials',''],['loc','where they are',''],['job','what they do',''],['status','status',r.status||''],['met','how you met',r.met||''],['last','last linked \ud83d\udd25',r.last||'']].forEach(f=>{h+='<div class="field"><label>'+f[1]+'</label><input id="cf_'+f[0]+'" value="'+v(f[0],f[2])+'"></div>';});
+  [['flags','\ud83d\udea9 red flags',''],['green','\ud83d\udc9a green flags',''],['ick','the ick',''],['intel','intel / notes',r.note||'']].forEach(f=>{h+='<div class="field"><label>'+f[1]+'</label><textarea id="cf_'+f[0]+'">'+v(f[0],f[2])+'</textarea></div>';});
+  h+='<div class="field"><label>log a link \ud83d\udd25 (drops on calendar)</label><input type="date" id="cf_linkdate"></div><button class="btn" id="cf_linkbtn" style="width:100%;margin-bottom:6px">+ log it</button><div class="hint">saves as you type \ud83e\udd1e</div></div>';
+  return h;}
+function wireCard(p){const keys=['rel','handle','loc','job','status','met','last','flags','green','ick','intel'];
+  const save=async()=>{const ed=personEdits[p.id]||{};keys.forEach(k=>{const el=document.getElementById('cf_'+k);if(el)ed[k]=el.value;});personEdits[p.id]=ed;await store.set('cc:personEdits',personEdits);};
+  keys.forEach(k=>{const el=document.getElementById('cf_'+k);if(el)el.addEventListener('input',save);});
+  const lb=document.getElementById('cf_linkbtn');if(lb)lb.onclick=async()=>{const dv=document.getElementById('cf_linkdate').value;if(!dv)return;const dd=new Date(dv+'T12:00:00'),lab=dd.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});const ed=personEdits[p.id]||{};ed.last=lab;personEdits[p.id]=ed;await store.set('cc:personEdits',personEdits);userEvents.push({date:dv,title:'linked w/ '+p.name});await store.set('cc:events',userEvents);const li=document.getElementById('cf_last');if(li)li.value=lab;lb.textContent='logged \u2713 '+lab;};}
+
+/* ====== SYNASTRY VOICE (tappable) ====== */
+const THEIR={Sun:'his whole identity',Moon:'his moods',Mercury:'how his mind works',Venus:'what he loves + how he loves',Mars:'his drive + sex drive',Asc:'his whole presence'};
+const YOURS={Sun:'your core self',Moon:'your emotions',Mercury:'your head',Venus:'your heart',Mars:'your fire',Asc:'your whole vibe'};
+const CONN={conjunction:'sits right on top of',opposition:'pulls against',square:'grinds against',trine:'glides into',sextile:'winks at'};
+const KICK={conjunction:'no daylight between you here \u2014 intense, occasionally too much',opposition:'magnet and mirror; you trigger and attract in the same breath',square:'this is where the friction (and the heat) lives',trine:'flows so easy you barely notice it working',sextile:'quiet chemistry \u2014 a door that opens if you walk through it'};
+function pairDeep(tp,mp,asp){const set=new Set([tp,mp]),f=[];
+  if(set.has('Mars')&&(set.has('Sun')||set.has('Venus')||set.has('Moon')))f.push('the chemistry is physical \u2014 bodies talk before brains get a vote \ud83d\udd25');
+  if(set.has('Sun')&&set.has('Moon'))f.push('sun-on-moon is the soulmate-or-situationship wiring \u2014 you feel weirdly essential to each other');
+  if(set.has('Venus'))f.push('love, money, and taste all get tangled up in this one');
+  if(set.has('Mercury'))f.push('the talking is the drug \u2014 3am conversations, finishing each other\'s sentences');
+  if(set.has('Moon')&&!set.has('Sun'))f.push('it lives in the feelings \u2014 moods ricochet between you fast');
+  if(asp==='square')f.push('the square keeps it from ever fully settling, which is exactly why it stays charged');
+  if(asp==='opposition')f.push('opposite ends of the same axis \u2014 fascinating and a little exhausting');
+  if(asp==='trine')f.push('so smooth you might take it for granted');
+  if(!f.length)f.push('real, but a quieter thread than the rest');
+  return f.join('. ')+'.';}
+function synLines(p){const out=[];for(const tp in p.planets){const tl=p.planets[tp].lon;for(const mp in SYD.planets){if(!THEIR[tp]||!YOURS[mp])continue;const s=sep(tl,SYD.planets[mp].lon);for(const asp of ASPECTS){const orb=Math.abs(s-asp.a);if(orb<=asp.orb){out.push({strength:(asp.orb-orb)/asp.orb+((asp.n==='conjunction'||asp.n==='opposition')?.6:0),short:THEIR[tp]+' '+CONN[asp.n]+' '+YOURS[mp],kick:KICK[asp.n],deep:pairDeep(tp,mp,asp.n)});break;}}}}return out.sort((a,b)=>b.strength-a.strength).slice(0,5);}
+function renderSynTab(p){const lines=synLines(p);
+  let h='<div class="blk"><h4>\ud83d\udd17 You & '+p.name+'</h4><p style="font-size:12.5px;color:var(--dust);font-style:italic;margin-bottom:10px">tap any line to crack it open \ud83d\udc47</p><div class="synlist">';
+  h+=lines.map(l=>'<button class="synline"><div class="sl-top"><span class="sl-a">'+l.short+'</span><span class="sl-chev">\uFF0B</span></div><div class="sl-deep" style="display:none">'+l.kick+'. '+l.deep+'</div></button>').join('');
+  h+='</div></div>';return h;}
 
 /* ====== COMPOSITE + DEEPER ====== */
 function midLon(a,b){let m=(a+b)/2;if(Math.abs(a-b)>180)m=(m+180)%360;return (m+360)%360;}
